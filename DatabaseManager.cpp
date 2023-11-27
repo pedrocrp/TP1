@@ -20,27 +20,27 @@ bool DatabaseManager::abrirConexao() {
 }
 
 void DatabaseManager::criarTabelas() {
-    const char* sqlUsuarios = 
-        "CREATE TABLE IF NOT EXISTS Usuarios ("
-        "ID INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "Email TEXT UNIQUE NOT NULL, "
-        "Senha TEXT NOT NULL);";
+    const char* sqlContas = 
+        "CREATE TABLE IF NOT EXISTS Conta ("
+                "Email TEXT PRIMARY KEY, "
+                "Nome TEXT, "
+                "Senha TEXT);";
 
     const char* sqlQuadros = 
-        "CREATE TABLE IF NOT EXISTS Quadros ("
-        "ID INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "Nome TEXT NOT NULL, "
-        "Descricao TEXT);";
+        "CREATE TABLE IF NOT EXISTS Quadro ("
+                "Codigo TEXT PRIMARY KEY, "
+                "Nome TEXT, "
+                "Descricao TEXT, "
+                "Limite INTEGER);";
 
     const char* sqlCartoes = 
-        "CREATE TABLE IF NOT EXISTS Cartoes ("
-        "ID INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "Titulo TEXT NOT NULL, "
-        "Conteudo TEXT, "
-        "IDQuadro INTEGER, "
-        "FOREIGN KEY (IDQuadro) REFERENCES Quadros(ID));";
+        "CREATE TABLE IF NOT EXISTS Cartao ("
+                "Codigo TEXT PRIMARY KEY, "
+                "Nome TEXT, "
+                "Descricao TEXT, "
+                "Coluna TEXT);";
 
-    executarConsulta(sqlUsuarios);
+    executarConsulta(sqlContas);
     executarConsulta(sqlQuadros);
     executarConsulta(sqlCartoes);
 }

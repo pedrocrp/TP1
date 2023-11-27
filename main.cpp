@@ -1,52 +1,91 @@
+// #include "servicos_conta.hpp"
+// #include <iostream>
+// #include <string>
+
+// int main() {
+//     try {
+//         ServicosConta servicosConta("database.db");
+
+//         std::string emailTeste = "pedro@example.com";
+//         auto conta = servicosConta.visualizarUsuario(emailTeste);
+
+//         if (conta) {
+//             std::cout << "Conta encontrada: " << (*conta).getNome() << std::endl;
+//         } else {
+//             std::cout << "Conta não encontrada." << std::endl;
+//         }
+
+//     } catch (const std::exception& e) {
+//         std::cerr << "Erro: " << e.what() << std::endl;
+//         return 1;
+//      }
+
+//     return 0;
+// }
+
+
+// #include "DatabaseManager.hpp"
+// #include <iostream>
+
+// int main() {
+//     try {
+//         // Substitua 'caminho_para_o_banco_de_dados.db' pelo caminho desejado para o banco de dados
+//         std::string dbPath = "database.db";
+//         DatabaseManager dbManager(dbPath);
+
+//         dbManager.abrirConexao();   // Abre a conexão com o banco de dados
+//         dbManager.criarTabelas();   // Cria as tabelas no banco de dados
+
+//         std::cout << "Banco de dados criado e configurado com sucesso." << std::endl;
+
+//     } catch (const std::exception& e) {
+//         std::cerr << "Erro ao configurar o banco de dados: " << e.what() << std::endl;
+//         return 1;
+//     }
+
+//     return 0;
+// }
+
+
+
+#include "DatabaseManager.hpp"
+#include "servicos_conta.hpp"
 #include <iostream>
 #include <string>
-#include "DatabaseManager.hpp"
-#include "interfaces.hpp"
-
-using namespace std;
+#include <optional>
 
 int main() {
-    DatabaseManager dbManager("projeto_kanban.db");
-    if (!dbManager.abrirConexao()) {
-        cerr << "Falha ao abrir conexão com o banco de dados." << endl;
-        return 1;
-    }
-
-    dbManager.criarTabelas();
-
-    // Criando instâncias de domínio para teste
-    Email emailTeste;
-    Texto nomeTeste;
-    Senha senhaTeste;
-
     try {
-        emailTeste.setEmail("usuario@teste.com");
-        nomeTeste.setTexto("Usuario Teste");
-        senhaTeste.setSenha("Senha123!");
+        std::string dbPath = "database.db";
+        ServicosConta servicosConta(dbPath);
 
-        // Criando uma conta de teste
-        Conta contaTeste(emailTeste, nomeTeste, senhaTeste);
+        std::string email = "usuario@example.com";
+        std::string nome = "Usuario Exemplo";
+        std::string senha = "A1.b!";
 
-        // Criando ServicoUsuario e testando a criação de usuário
-        ServicoUsuario servicoUsuario(dbManager);
-        if (servicoUsuario.criarUsuario(contaTeste)) {
-            cout << "Usuário criado com sucesso." << endl;
-        } else {
-            cout << "Falha ao criar usuário." << endl;
-        }
-
-        // Testando a busca por usuário
+        // Tenta criar um usuário
         try {
-            Conta contaEncontrada = servicoUsuario.obterUsuario(emailTeste);
-            cout << "Usuário encontrado: " << contaEncontrada.getNome() << endl;
-        } catch (const runtime_error& e) {
-            cout << "Erro ao buscar usuário: " << e.what() << endl;
+            servicosConta.criarUsuario(nome, email, senha);
+            std::cout << "Usuário criado com sucesso." << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << "Erro ao criar usuário: " << e.what() << std::endl;
+            return 1;  // Encerra se não conseguir criar usuário
         }
 
-        // Adicione mais testes conforme necessário
+        // Tenta visualizar o usuário criado
+        auto conta = servicosConta.visualizarUsuario(email);
+        if (conta) {
+            std::cout << "Detalhes do usuário:" << std::endl;
+            std::cout << "Email: " << conta->getEmail() << std::endl;
+            std::cout << "Nome: " << conta->getNome() << std::endl;
+            std::cout << "Senha: " << conta->getSenha() << std::endl;
+        } else {
+            std::cout << "Usuário não encontrado." << std::endl;
+        }
 
-    } catch (const invalid_argument& e) {
-        cerr << "Erro na criação dos dados de teste: " << e.what() << endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Erro geral: " << e.what() << std::endl;
+        return 1;
     }
 
     return 0;
