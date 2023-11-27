@@ -1,55 +1,42 @@
-// interfaces.hpp
+#ifndef INTERFACES_HPP_INCLUDED
+#define INTERFACES_HPP_INCLUDED
 
-#ifndef INTERFACES_HPP
-#define INTERFACES_HPP
+#include <string>
+#include <vector>
 
-#include "entidades.h"
-#include <list>
-
-// Interface de Serviço de Usuário
-class IServicoUsuario {
+// Interface para autenticação
+class IAutenticacao {
 public:
-    virtual bool criarUsuario(const Conta& conta) = 0;
-    virtual Conta obterUsuario(const Email& email) = 0;
-    virtual Conta obterUsuarioPorNome(const Texto& nome) = 0;
-    virtual bool excluirUsuario(const Email& email) = 0;
-    virtual bool autenticarUsuario(const Email& email, const Senha& senha) = 0;
-    virtual std::list<Conta> listarUsuarios() = 0;
-    virtual bool redefinirSenha(const Email& email, const Senha& novaSenha) = 0;
-
-    virtual ~IServicoUsuario() {}
+    virtual bool autenticar(const std::string& email, const std::string& senha) = 0;
+    virtual ~IAutenticacao() {}
 };
 
-// Interface de Serviço de Quadro
-class IServicoQuadro {
+// Interface para gerenciamento de usuários
+class IGerenciamentoUsuario {
 public:
-    virtual bool criarQuadro(const Quadro& quadro) = 0;
-    virtual Quadro obterQuadro(const Codigo& codigo) = 0;
-    virtual bool atualizarQuadro(const Quadro& quadro) = 0;
-    virtual bool deletarQuadro(const Codigo& codigo) = 0;
-    virtual std::list<Quadro> listarQuadros() = 0;
-    virtual bool associarCartaoAoQuadro(const Cartao& cartao, const Codigo& codigoQuadro) = 0;
-    virtual bool desassociarCartaoDoQuadro(const Codigo& codigoCartao, const Codigo& codigoQuadro) = 0;
-
-    virtual ~IServicoQuadro() {}
+    virtual void criarUsuario(const std::string& nome, const std::string& email, const std::string& senha) = 0;
+    virtual void editarUsuario(const std::string& email, const std::string& novoNome, const std::string& novaSenha) = 0;
+    virtual void excluirUsuario(const std::string& email) = 0;
+    virtual ~IGerenciamentoUsuario() {}
 };
 
-
-// Interface de Serviço de Cartão
-class IServicoCartao {
+// Interface para gerenciamento de quadros (boards)
+class IGerenciamentoQuadro {
 public:
-    virtual bool adicionarCartao(const Cartao& cartao, const Codigo& codigoQuadro) = 0;
-    // Outros métodos...
-    virtual ~IServicoCartao() {}
+    virtual void criarQuadro(const std::string& nomeQuadro, const std::string& usuario) = 0;
+    virtual void visualizarQuadro(const std::string& codigoQuadro) = 0;
+    virtual void excluirQuadro(const std::string& codigoQuadro, const std::string& usuario) = 0;
+    virtual ~IGerenciamentoQuadro() {}
 };
 
-// Interface de Serviço de Autenticação
-class IServicoAutenticacao {
+// Interface para gerenciamento de cartões (cards)
+class IGerenciamentoCartao {
 public:
-    virtual bool autenticarUsuario(const Email& email, const Senha& senha) = 0;
-    virtual ~IServicoAutenticacao() {}
+    virtual void criarCartao(const std::string& titulo, const std::string& descricao, const std::string& codigoQuadro) = 0;
+    virtual void visualizarCartao(const std::string& codigoCartao) = 0;
+    virtual void moverCartao(const std::string& codigoCartao, const std::string& novaColuna) = 0;
+    virtual void excluirCartao(const std::string& codigoCartao) = 0;
+    virtual ~IGerenciamentoCartao() {}
 };
 
-// Interfaces adicionais podem ser declaradas aqui, como uma Interface de Gestão de Projetos, Interface de Controle de Sessão, etc.
-
-#endif // INTERFACES_HPP
+#endif // INTERFACES_HPP_INCLUDED

@@ -1,109 +1,53 @@
-/*
-*===============================================================*
-*            Trabalho 1 - Técnicas de programação               *
-*===============================================================*
-*===============================================================*
-*                                                               *
-*   Aluno 1: [Pedro César Ribeiro Passos] Matrícula:[180139312] *
-*                                                               *
-*===============================================================*
-*/
-
 #include <iostream>
 #include <string>
-#include <locale.h>
-#include "testes.h"
+#include "DatabaseManager.hpp"
+#include "interfaces.hpp"
 
 using namespace std;
 
-int main(){
+int main() {
+    DatabaseManager dbManager("projeto_kanban.db");
+    if (!dbManager.abrirConexao()) {
+        cerr << "Falha ao abrir conexão com o banco de dados." << endl;
+        return 1;
+    }
 
-    setlocale(LC_ALL,"");
+    dbManager.criarTabelas();
 
-    /* INÍCIO TESTES CLASSES DOMÍNIOS */
+    // Criando instâncias de domínio para teste
+    Email emailTeste;
+    Texto nomeTeste;
+    Senha senhaTeste;
 
-    cout << "                       TESTE DE UNIDADE DOMINIOS " << endl;
+    try {
+        emailTeste.setEmail("usuario@teste.com");
+        nomeTeste.setTexto("Usuario Teste");
+        senhaTeste.setSenha("Senha123!");
 
-    TUCodigo teste_Codigo;
-    if(teste_Codigo.run())
-        cout << "O teste de Unidade da Classe 'Codigo' está funcionando corretamente!" << endl;
-    else
-        cout << "Código inválido!" << endl;
+        // Criando uma conta de teste
+        Conta contaTeste(emailTeste, nomeTeste, senhaTeste);
 
+        // Criando ServicoUsuario e testando a criação de usuário
+        ServicoUsuario servicoUsuario(dbManager);
+        if (servicoUsuario.criarUsuario(contaTeste)) {
+            cout << "Usuário criado com sucesso." << endl;
+        } else {
+            cout << "Falha ao criar usuário." << endl;
+        }
 
-    TUColuna teste_Coluna;
-    if(teste_Coluna.run())
-        cout << "O teste de Unidade da Classe 'Coluna' está funcionando corretamente!" << endl;
-    else
-        cout << "Coluna inválida!" << endl;
+        // Testando a busca por usuário
+        try {
+            Conta contaEncontrada = servicoUsuario.obterUsuario(emailTeste);
+            cout << "Usuário encontrado: " << contaEncontrada.getNome() << endl;
+        } catch (const runtime_error& e) {
+            cout << "Erro ao buscar usuário: " << e.what() << endl;
+        }
 
+        // Adicione mais testes conforme necessário
 
-    TUEmail teste_Email;
-    if(teste_Email.run())
-        cout << "O teste de Unidade da Classe 'Email' está funcionando corretamente!" << endl;
-    else
-        cout << "Email inválido!" << endl;
-
-
-    TULimite teste_Limite;
-    if(teste_Limite.run())
-        cout << "O teste de Unidade da Classe 'Limite' está funcionando corretamente!" << endl;
-    else
-        cout << "Limite inválido!" << endl;
-
-    
-    TUSenha teste_Senha;
-    if(teste_Senha.run())
-        cout << "O teste de Unidade da Classe 'Senha' está funcionando corretamente!" << endl;
-    else
-        cout << "Senha inválida!" << endl;
-
-    TUTexto teste_Texto;
-    if(teste_Texto.run())
-        cout << "O teste de Unidade da Classe 'Texto' está funcionando corretamente!" << endl;
-    else
-        cout << "Texto inválido!" << endl;
-
-
-
-    /* FIM TESTES CLASSES DOMÍNIOS */
-
-    cout << endl;
-
-    // Quando você tiver classes de entidade, pode adicionar testes de unidade para elas aqui.
-
-    /* INÍCIO TESTES CLASSES ENTIDADES */
-
-    cout << "                       TESTE DE UNIDADE ENTIDADES " << endl;
-
-    TUConta teste_Conta;
-    if(teste_Conta.run())
-        cout << "O teste de Unidade da Classe 'Conta' está funcionando corretamente!" << endl;
-    else
-        cout << "Conta inválida!" << endl;
-
-
-    TUQuadro teste_Quadro;
-    if(teste_Quadro.run())
-        cout << "O teste de Unidade da Classe 'Quadro' está funcionando corretamente!" << endl;
-    else
-        cout << "Quadro inválido!" << endl;
-
-    
-    TUCartao teste_Cartao;
-    if(teste_Cartao.run())
-        cout << "O teste de Unidade da Classe 'Cartao' está funcionando corretamente!" << endl;
-    else
-        cout << "Cartao inválido!" << endl;
-
-
-    /* FIM TESTES CLASSES ENTIDADES */
-
-    // Para aguardar uma entrada do usuário antes do programa terminar
-    cin.get();
+    } catch (const invalid_argument& e) {
+        cerr << "Erro na criação dos dados de teste: " << e.what() << endl;
+    }
 
     return 0;
 }
-
-
-
