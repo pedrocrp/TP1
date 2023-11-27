@@ -3,13 +3,18 @@
 #include "DatabaseManager.hpp"
 #include <iostream>
 
-DatabaseManager::DatabaseManager(const std::string& dbPath) : dbPath(dbPath), db(nullptr) {}
+DatabaseManager::DatabaseManager(const std::string& dbPath) : dbPath(dbPath), db(nullptr), stmt(nullptr) {}
+sqlite3_stmt* stmt;
 
 DatabaseManager::~DatabaseManager() {
     if (db) {
         sqlite3_close(db);
     }
+    if (stmt) {
+        sqlite3_finalize(stmt);
+    }
 }
+
 
 bool DatabaseManager::abrirConexao() {
     if (sqlite3_open(dbPath.c_str(), &db) != SQLITE_OK) {
@@ -81,4 +86,27 @@ std::optional<std::vector<std::map<std::string, std::string>>> DatabaseManager::
     }
 }
 
+// Prepara uma consulta SQL
+void DatabaseManager::prepararConsulta(const std::string& sql) {
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+        throw std::runtime_error("Erro ao preparar consulta: " + std::string(sqlite3_errmsg(db)));
+    }
+}
 
+// Vincula um valor a um placeholder na consulta preparada
+void DatabaseManager::vincularValor(int posicao, const std::string& valor) {
+    if (sqlite3_bind_text(stmt, posicao, valor.c_str(), -1, SQLITE_TRANSIENT) != SQLITE_OK) {
+        throw std::runtime_error("Erro ao vincular valor: " + std::string(sqlite3_errmsg(db)));
+    }
+}
+
+// Executa uma consulta preparada
+bool DatabaseManager::executarConsultaPreparada() {
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        std::cerr << "Erro ao executar consulta preparada: " << sqlite3_errmsg(db) << std::endl;
+        sqlite3_finalize(stmt);
+        return false;
+    }
+    sqlite3_finalize(stmt);
+    return true;
+}

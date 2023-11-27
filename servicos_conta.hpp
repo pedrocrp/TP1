@@ -12,7 +12,7 @@ private:
     DatabaseManager dbManager;  // Declarando o campo dbManager
 public:
     ServicosConta(const std::string& dbPath);
-    void criarUsuario(const std::string& nome, const std::string& email, const std::string& senha) override;
+    void criarUsuario(const std::string& email, const std::string& nome, const std::string& senha) override;
     void editarUsuario(const std::string& email, const std::string& novoNome, const std::string& novaSenha) override;
     void excluirUsuario(const std::string& email) override;
     std::optional<Conta> visualizarUsuario(const std::string& email);

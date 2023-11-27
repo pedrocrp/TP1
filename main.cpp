@@ -59,13 +59,13 @@ int main() {
         std::string dbPath = "database.db";
         ServicosConta servicosConta(dbPath);
 
-        std::string email = "usuario@example.com";
-        std::string nome = "Usuario Exemplo";
-        std::string senha = "A1.b!";
+        std::string email = "user@example.com";
+        std::string nome = "Pedro";
+        std::string senha = "B1.b!";
 
         // Tenta criar um usuário
         try {
-            servicosConta.criarUsuario(nome, email, senha);
+            servicosConta.criarUsuario(email, nome, senha);
             std::cout << "Usuário criado com sucesso." << std::endl;
         } catch (const std::exception& e) {
             std::cerr << "Erro ao criar usuário: " << e.what() << std::endl;
