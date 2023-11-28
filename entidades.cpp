@@ -230,8 +230,8 @@ Quadro::Quadro() {
  * @param nome O nome a ser atribuído ao quadro.
  * @param limite O limite a ser atribuído ao quadro.
  */
-Quadro::Quadro(const Codigo& codigo, const Texto& nome, const Limite& limite)
-    : codigo(codigo), nome(nome), limite(limite) {
+Quadro::Quadro(const Codigo& codigo, const Texto& nome, const Texto& descricao, const Limite& limite)
+    : codigo(codigo), nome(nome), limite(limite), descricao(descricao){
     // O corpo está vazio, a lista de inicialização já lidou com a atribuição de membros.
 }
 
@@ -264,6 +264,10 @@ int Quadro::getLimite() const {
     return limite.getLimite();  // Retorna o valor de limite, não o objeto inteiro.
 }
 
+std::string Quadro::getDescricao() const {
+    return descricao.getTexto();  // Retorna o valor de nome, não o objeto inteiro.
+}
+
 // Setters
 
 /**
@@ -284,6 +288,10 @@ void Quadro::setNome(const Texto& nome) {
     this->nome = nome;  // Atribuição direta. A validação ocorre no objeto 'Texto'.
 }
 
+void Quadro::setDescricao(const Texto& descricao) {
+    this->descricao = descricao;  // Atribuição direta. A validação ocorre no objeto 'Texto'.
+}
+
 /**
  * @brief Define o limite do quadro.
  * 
@@ -292,7 +300,6 @@ void Quadro::setNome(const Texto& nome) {
 void Quadro::setLimite(const Limite& limite) {
     this->limite = limite;  // Atribuição direta. A validação ocorre no objeto 'Limite'.
 }
-
 
 
 

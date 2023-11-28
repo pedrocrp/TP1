@@ -50,6 +50,7 @@ void ServicosConta::criarUsuario(const std::string& email, const std::string& no
     }
 }
 
+
 void ServicosConta::editarUsuario(const std::string& email, const std::string& novoNome, const std::string& novaSenha) {
     // Verificar se a conta existe
     std::string sqlVerificacao = "SELECT * FROM Conta WHERE Email = '" + email + "';";
@@ -102,20 +103,31 @@ void ServicosConta::editarUsuario(const std::string& email, const std::string& n
 }
 
 
-
 void ServicosConta::excluirUsuario(const std::string& email) {
-    std::string sql = "DELETE FROM Conta WHERE Email = '" + email + "';";
-    auto resultado = dbManager.executarConsulta(sql);
-    if (!resultado) {
+    // Verificar se a conta existe
+    std::string sqlVerificacao = "SELECT Email FROM Conta WHERE Email = '" + email + "';";
+    auto resultadoVerificacao = dbManager.executarConsulta(sqlVerificacao);
+
+    if (!resultadoVerificacao || resultadoVerificacao->empty()) {
+        throw std::runtime_error("Conta não encontrada para exclusão.");
+    }
+
+    // Se a conta existir, proceder com a exclusão
+    std::string sqlExclusao = "DELETE FROM Conta WHERE Email = ?;";
+    dbManager.prepararConsulta(sqlExclusao);
+    dbManager.vincularValor(1, email);
+    if (!dbManager.executarConsultaPreparada()) {
         throw std::runtime_error("Erro ao excluir conta.");
     }
 }
+
+
 
 std::optional<Conta> ServicosConta::visualizarUsuario(const std::string& email) {
     std::string sql = "SELECT Nome, Senha FROM Conta WHERE Email = '" + email + "';";
     auto resultado = dbManager.executarConsulta(sql);
 
-    if (!resultado || resultado->empty()) {
+    if (!resultado.has_value() || resultado.value().empty()) {
         return std::nullopt; // Conta não encontrada.
     }
 
@@ -124,10 +136,10 @@ std::optional<Conta> ServicosConta::visualizarUsuario(const std::string& email) 
     Senha senha;
 
     emailObjeto.setEmail(email);
-    nome.setTexto(resultado->at(0).at("Nome"));
-    senha.setSenha(resultado->at(0).at("Senha"));
+    nome.setTexto(resultado.value().at(0).at("Nome"));
+    senha.setSenha(resultado.value().at(0).at("Senha"));
 
     Conta conta(emailObjeto, nome, senha);
     return conta;
-    }
+}
 

@@ -103,7 +103,7 @@ private:
     Codigo codigo; ///< Código único identificador do quadro. Deve ser um código válido.
     Texto nome;    ///< Nome descritivo do quadro. Deve ser um texto válido.
     Limite limite; ///< Limite de tarefas, ou recursos no quadro. Deve ser um valor de limite válido.
-
+    Texto descricao; 
 public:
     /**
      * @brief Construtor padrão.
@@ -120,7 +120,7 @@ public:
      * @param nome Referência constante para um objeto da classe Texto.
      * @param limite Referência constante para um objeto da classe Limite.
      */
-    Quadro(const Codigo& codigo, const Texto& nome, const Limite& limite);  
+    Quadro(const Codigo& codigo, const Texto& nome, const Texto& descricao ,const Limite& limite);  
 
     /**
      * @brief Recupera o código do quadro.
@@ -143,6 +143,15 @@ public:
      */
     int getLimite() const;
 
+
+    /**
+     * @brief Recupera a descricao do quadro.
+     * 
+     * @return Uma string representando a descricao do quadro.
+     */
+    std::string getDescricao() const;
+
+
     /**
      * @brief Define o código do quadro.
      * 
@@ -163,7 +172,18 @@ public:
      * @param limite Referência constante para um objeto da classe Limite.
      */
     void setLimite(const Limite& limite);
+
+
+
+/**
+     * @brief Define a descricao do quadro.
+     * 
+     * @param descricao Referência constante para um objeto da classe Descricao.
+     */
+    void setDescricao(const Texto& descricao);
 };
+
+
 
 
 
