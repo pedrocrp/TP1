@@ -1,29 +1,3 @@
-// #include "servicos_conta.hpp"
-// #include <iostream>
-// #include <string>
-
-// int main() {
-//     try {
-//         ServicosConta servicosConta("database.db");
-
-//         std::string emailTeste = "pedro@example.com";
-//         auto conta = servicosConta.visualizarUsuario(emailTeste);
-
-//         if (conta) {
-//             std::cout << "Conta encontrada: " << (*conta).getNome() << std::endl;
-//         } else {
-//             std::cout << "Conta não encontrada." << std::endl;
-//         }
-
-//     } catch (const std::exception& e) {
-//         std::cerr << "Erro: " << e.what() << std::endl;
-//         return 1;
-//      }
-
-//     return 0;
-// }
-
-
 // #include "DatabaseManager.hpp"
 // #include <iostream>
 
@@ -46,95 +20,99 @@
 // }
 
 
-
-// #include "DatabaseManager.hpp"
-// #include "servicos_conta.hpp"
-// #include <iostream>
-// #include <string>
-// #include <optional>
-
-// int main() {
-//     try {
-//         std::string dbPath = "database.db";
-//         ServicosConta servicosConta(dbPath);
-
-//         std::string email = "user@example.com";
-//         std::string nome = "Pedro";
-//         std::string senha = "B1.b!";
-
-//         // Tenta criar um usuário
-//         // try {
-//         //     // servicosConta.excluirUsuario(email);
-//         //     servicosConta.criarUsuario(email, nome, senha);
-//         //     std::cout << "Usuário excluido com sucesso." << std::endl;
-//         // } catch (const std::exception& e) {
-//         //     std::cerr << "Erro ao excluir usuário: " << e.what() << std::endl;
-//         //     return 1;  // Encerra se não conseguir criar usuário
-//         // }
-
-//         // Tenta visualizar o usuário criado
-//         auto conta = servicosConta.visualizarUsuario(email);
-//         if (conta) {
-//             std::cout << "Detalhes do usuário:" << std::endl;
-//             std::cout << "Email: " << conta->getEmail() << std::endl;
-//             std::cout << "Nome: " << conta->getNome() << std::endl;
-//             std::cout << "Senha: " << conta->getSenha() << std::endl;
-//         } else {
-//             std::cout << "Usuário não encontrado." << std::endl;
-//         }
-
-//     } catch (const std::exception& e) {
-//         std::cerr << "Erro geral: " << e.what() << std::endl;
-//         return 1;
-//     }
-
-//     return 0;
-// }
-
-
-
-
-#include "DatabaseManager.hpp"
-#include "servicos_quadro.hpp"
+#include "servicos.hpp"
 #include <iostream>
-#include <string>
+#include <stdexcept>
+#include "entidades.h"
 
-// Função para testar a criação de um quadro
-void testarCriacaoQuadro(ServicosQuadro& servicosQuadro) {
-    std::string codigo, emailConta, nome, descricao;
-    int limite;
-
-    std::cout << "Informe o código do quadro (ex: AB12): ";
-    std::cin >> codigo;
-
-    std::cout << "Informe o email da conta associada: ";
-    std::cin >> emailConta;
-
-    std::cout << "Informe o nome do quadro: ";
-    std::cin.ignore(); // Ignora o '\n' que sobrou da entrada anterior
-    std::getline(std::cin, nome); // Usa getline para permitir espaços no nome
-
-    std::cout << "Informe a descrição do quadro: ";
-    std::getline(std::cin, descricao);
-
-    std::cout << "Informe o limite de tarefas (5, 10, 15 ou 20): ";
-    std::cin >> limite;
-
+void testeConta(ServicosConta& servicosConta) {
     try {
-        servicosQuadro.criarQuadro(codigo, emailConta, nome, descricao, limite);
-        std::cout << "Quadro criado com sucesso!" << std::endl;
+        // Criar uma conta
+        Email email;
+        email.setEmail("usuario@example.com");
+        Texto nome;
+        nome.setTexto("Usuario Teste");
+        Senha senha;
+        senha.setSenha("AB.c1");
+
+        Conta conta(email, nome, senha);
+        servicosConta.criarUsuario(conta);
+        std::cout << "Conta criada com sucesso." << std::endl;
+
+        // Visualizar uma conta
+        auto contaVisualizada = servicosConta.visualizarUsuario("usuario@example.com");
+        if (contaVisualizada) {
+            std::cout << "Conta visualizada:" << std::endl;
+            std::cout << "Email: " << contaVisualizada->getEmail() << std::endl;
+            std::cout << "Nome: " << contaVisualizada->getNome() << std::endl;
+            std::cout << "Senha: " << contaVisualizada->getSenha() << std::endl;
+        } else {
+            std::cout << "Conta não encontrada." << std::endl;
+        }
+
+        // Editar uma conta
+        std::string novoNome = "Usuario Atualizado";
+        std::string novaSenha = "NEw.1";
+        servicosConta.editarUsuario("usuario@example.com", novoNome, novaSenha);
+        std::cout << "Conta editada com sucesso." << std::endl;
+
+        // Excluir uma conta
+        servicosConta.excluirUsuario("usuario@example.com");
+        std::cout << "Conta excluída com sucesso." << std::endl;
+
     } catch (const std::exception& e) {
-        std::cerr << "Erro ao criar quadro: " << e.what() << std::endl;
+        std::cerr << "Erro: " << e.what() << std::endl;
     }
 }
+
+
+void testeCartao(ServicosCartao& servicosCartao) {
+    try {
+        // Criar um cartão
+        Codigo codigoCartao;
+        codigoCartao.setCodigo("CD34");
+        Texto nomeCartao;
+        nomeCartao.setTexto("Cartao Teste");
+        Texto descricaoCartao;
+        descricaoCartao.setTexto("Descricao do Cartao");
+        Coluna colunaCartao;
+        colunaCartao.setEstado("EM EXECUCAO");
+        Cartao cartao(codigoCartao, nomeCartao, descricaoCartao, colunaCartao);
+
+        // Supondo que QD01 é o código de um quadro existente
+        servicosCartao.criarCartao(cartao, "QD01"); 
+        std::cout << "Cartão criado com sucesso." << std::endl;
+
+        // Visualizar um cartão
+        auto cartaoVisualizado = servicosCartao.visualizarCartao("CD34");
+        if (cartaoVisualizado) {
+            std::cout << "Cartão visualizado: " << cartaoVisualizado->getNome() << std::endl;
+        } else {
+            std::cout << "Cartão não encontrado." << std::endl;
+        }
+
+        // Mover um cartão
+        servicosCartao.moverCartao("CD34", "CONCLUIDO");
+        std::cout << "Cartão movido com sucesso." << std::endl;
+
+        // Excluir um cartão
+        servicosCartao.excluirCartao("CD34");
+        std::cout << "Cartão excluído com sucesso." << std::endl;
+
+    } catch (const std::exception& e) {
+        std::cerr << "Erro: " << e.what() << std::endl;
+    }
+}
+
 
 int main() {
     try {
         std::string dbPath = "database.db";
-        ServicosQuadro servicosQuadro(dbPath);
+        ServicosConta servicosConta(dbPath);
+        ServicosCartao servicosCartao(dbPath);
 
-        // Testar a criação de um quadro
-        testarCriacaoQuadro(servicosQuadro);
+        //testeConta(servicosConta);
+        testeCartao(servicosCartao);
 
     } catch (const std::exception& e) {
         std::cerr << "Erro geral: " << e.what() << std::endl;
@@ -143,10 +121,3 @@ int main() {
 
     return 0;
 }
-
-
-
-
-
-
-

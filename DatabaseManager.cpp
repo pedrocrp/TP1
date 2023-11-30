@@ -17,6 +17,7 @@ bool DatabaseManager::abrirConexao() {
     return true;
 }
 
+
 void DatabaseManager::criarTabelas() {
     const char* sqlContas = 
         "CREATE TABLE IF NOT EXISTS Conta ("
@@ -50,14 +51,13 @@ void DatabaseManager::criarTabelas() {
 
 std::optional<std::vector<std::map<std::string, std::string>>> DatabaseManager::executarConsulta(const std::string& sql) {
     if (sql.find("SELECT") == 0) {
+        // Executa consultas SELECT
         sqlite3_stmt* stmt;
         std::vector<std::map<std::string, std::string>> results;
-
         if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
             std::cerr << "Erro ao preparar consulta: " << sqlite3_errmsg(db) << std::endl;
             return std::nullopt;
         }
-
         int cols = sqlite3_column_count(stmt);
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             std::map<std::string, std::string> row;
@@ -68,43 +68,17 @@ std::optional<std::vector<std::map<std::string, std::string>>> DatabaseManager::
             }
             results.push_back(row);
         }
-
         sqlite3_finalize(stmt);
         return results;
     } else {
-        // Para comandos que não são SELECT
-        char* zErrMsg = 0;
+        // Executa outros tipos de consultas (INSERT, UPDATE, DELETE)
+        char* zErrMsg = nullptr;
         if (sqlite3_exec(db, sql.c_str(), 0, 0, &zErrMsg) != SQLITE_OK) {
             std::cerr << "Erro SQL: " << zErrMsg << std::endl;
             sqlite3_free(zErrMsg);
             return std::nullopt;
         }
-        return std::nullopt; // Retorna nullopt para indicar que não há dados a retornar
+        return std::vector<std::map<std::string, std::string>>();  // Retorna um vetor vazio para indicar que não há dados a retornar.
     }
 }
 
-
-
-void DatabaseManager::prepararConsulta(const std::string& sql) {
-    sqlite3_stmt* stmt;
-    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
-        throw std::runtime_error("Erro ao preparar consulta: " + std::string(sqlite3_errmsg(db)));
-    }
-    this->stmt = stmt;  // Salvar stmt como membro da classe
-}
-
-void DatabaseManager::vincularValor(int posicao, const std::string& valor) {
-    if (sqlite3_bind_text(this->stmt, posicao, valor.c_str(), -1, SQLITE_TRANSIENT) != SQLITE_OK) {
-        throw std::runtime_error("Erro ao vincular valor: " + std::string(sqlite3_errmsg(db)));
-    }
-}
-
-bool DatabaseManager::executarConsultaPreparada() {
-    if (sqlite3_step(this->stmt) != SQLITE_DONE) {
-        std::cerr << "Erro ao executar consulta preparada: " << sqlite3_errmsg(db) << std::endl;
-        sqlite3_finalize(this->stmt);
-        return false;
-    }
-    sqlite3_finalize(this->stmt);
-    return true;
-}
