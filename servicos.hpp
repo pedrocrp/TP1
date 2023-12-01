@@ -19,14 +19,14 @@ public:
 };
 
 
-class ServicosQuadro {
+class ServicosQuadro : public IGerenciamentoQuadro{
 public:
     
     ServicosQuadro(const std::string& dbPath);
     void criarQuadro(const std::string& emailConta, const Quadro& quadro);
-    void editarQuadro(const std::string& codigo, const std::optional<std::string>& novoNome, const std::optional<std::string>& novaDescricao, const std::optional<int>& novoLimite);
-    void excluirQuadro(const std::string& codigo);
-    std::optional<Quadro> visualizarQuadro(const std::string& codigo);
+    void editarQuadro(const std::string& emailUsuario, const std::string& codigo, const std::optional<std::string>& novoNome, const std::optional<std::string>& novaDescricao, const std::optional<int>& novoLimite);
+    void excluirQuadro(const std::string& emailUsuario, const std::string& codigo);
+    std::optional<Quadro> visualizarQuadro(const std::string& emailUsuario, const std::string& codigo);
 
 private:
     DatabaseManager dbManager;
@@ -39,10 +39,10 @@ private:
 
 public:
     ServicosCartao(const std::string& dbPath);
-    void criarCartao(const Cartao& cartao, const std::string& codigoQuadro) override;
-    std::optional<Cartao> visualizarCartao(const std::string& codigo) override;
-    void moverCartao(const std::string& codigo, const std::string& novaColuna) override;
-    void excluirCartao(const std::string& codigo) override;
+    void criarCartao(const Cartao& cartao, const std::string& codigoQuadro, const std::string& emailUsuario) override;
+    std::optional<Cartao> visualizarCartao(const std::string& codigoCartao, const std::string& emailUsuario) override;
+    void moverCartao(const std::string& codigoCartao, const std::string& novaColuna, const std::string& emailUsuario) override;
+    void excluirCartao(const std::string& codigoCartao, const std::string& emailUsuario) override;
 };
 
 

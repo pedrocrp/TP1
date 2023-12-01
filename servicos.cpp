@@ -117,12 +117,36 @@ ServicosQuadro::ServicosQuadro(const std::string& dbPath) : dbManager(dbPath) {
 
 
 void ServicosQuadro::criarQuadro(const std::string& emailConta, const Quadro& quadro) {
-    std::string sql = "INSERT INTO Quadro (Codigo, EmailConta, Nome, Descricao, Limite) VALUES ('" + quadro.getCodigo() + "', '" + emailConta + "', '" + quadro.getNome() + "', '" + quadro.getDescricao() + "', " + std::to_string(quadro.getLimite()) + ");";
+    // Verificar se a conta existe
+    std::string sqlVerificacaoConta = "SELECT Email FROM Conta WHERE Email = '" + emailConta + "';";
+    auto resultadoVerificacaoConta = dbManager.executarConsulta(sqlVerificacaoConta);
+    if (!resultadoVerificacaoConta || resultadoVerificacaoConta->empty()) {
+        throw std::runtime_error("Conta associada ao quadro não encontrada.");
+    }
+
+    // Verificar se o código do quadro já está em uso
+    std::string sqlVerificaCodigo = "SELECT Codigo FROM Quadro WHERE Codigo = '" + quadro.getCodigo() + "';";
+    auto resultadoVerificaCodigo = dbManager.executarConsulta(sqlVerificaCodigo);
+    if (resultadoVerificaCodigo && !resultadoVerificaCodigo->empty()) {
+        throw std::runtime_error("Código do quadro já está em uso.");
+    }
+
+    // Inserir quadro no banco de dados
+    std::string sql = "INSERT INTO Quadro (Codigo, EmailConta, Nome, Descricao, Limite) VALUES ('" + 
+                      quadro.getCodigo() + "', '" + emailConta + "', '" + quadro.getNome() + "', '" + 
+                      quadro.getDescricao() + "', " + std::to_string(quadro.getLimite()) + ");";
     dbManager.executarConsulta(sql);
 }
 
 
-void ServicosQuadro::editarQuadro(const std::string& codigo, const std::optional<std::string>& novoNome, const std::optional<std::string>& novaDescricao, const std::optional<int>& novoLimite) {
+void ServicosQuadro::editarQuadro(const std::string& emailUsuario, const std::string& codigo, const std::optional<std::string>& novoNome, const std::optional<std::string>& novaDescricao, const std::optional<int>& novoLimite) {
+    // Verificar se o quadro pertence ao usuário
+    std::string sqlVerificaPropriedade = "SELECT EmailConta FROM Quadro WHERE Codigo = '" + codigo + "' AND EmailConta = '" + emailUsuario + "';";
+    auto resultadoPropriedade = dbManager.executarConsulta(sqlVerificaPropriedade);
+    if (!resultadoPropriedade || resultadoPropriedade->empty()) {
+        throw std::runtime_error("Quadro não encontrado ou não pertence ao usuário.");
+    }
+
     std::string sqlAtualizacao = "UPDATE Quadro SET ";
     bool primeiroCampo = true;
 
@@ -150,14 +174,29 @@ void ServicosQuadro::editarQuadro(const std::string& codigo, const std::optional
 }
 
 
-void ServicosQuadro::excluirQuadro(const std::string& codigo) {
-    std::string sql = "DELETE FROM Quadro WHERE Codigo = '" + codigo + "';";
-    dbManager.executarConsulta(sql);
+void ServicosQuadro::excluirQuadro(const std::string& emailUsuario, const std::string& codigo) {
+    // Verificar se o quadro pertence ao usuário
+    std::string sqlVerificaPropriedade = "SELECT EmailConta FROM Quadro WHERE Codigo = '" + codigo + "' AND EmailConta = '" + emailUsuario + "';";
+    auto resultadoPropriedade = dbManager.executarConsulta(sqlVerificaPropriedade);
+    if (!resultadoPropriedade || resultadoPropriedade->empty()) {
+        throw std::runtime_error("Quadro não encontrado ou não pertence ao usuário.");
+    }
+
+    // Excluir quadro
+    std::string sqlExclusao = "DELETE FROM Quadro WHERE Codigo = '" + codigo + "';";
+    dbManager.executarConsulta(sqlExclusao);
 }
 
 
-std::optional<Quadro> ServicosQuadro::visualizarQuadro(const std::string& codigo) {
-    // Prepara e executa a consulta SQL
+std::optional<Quadro> ServicosQuadro::visualizarQuadro(const std::string& emailUsuario, const std::string& codigo) {
+    // Verificar se o quadro pertence ao usuário
+    std::string sqlVerificaPropriedade = "SELECT EmailConta FROM Quadro WHERE Codigo = '" + codigo + "' AND EmailConta = '" + emailUsuario + "';";
+    auto resultadoPropriedade = dbManager.executarConsulta(sqlVerificaPropriedade);
+    if (!resultadoPropriedade || resultadoPropriedade->empty()) {
+        return std::nullopt; // Quadro não encontrado ou não pertence ao usuário.
+    }
+
+    // Executar consulta para buscar informações do quadro
     std::string sql = "SELECT Nome, Descricao, Limite FROM Quadro WHERE Codigo = '" + codigo + "';";
     auto resultado = dbManager.executarConsulta(sql);
 
@@ -175,7 +214,6 @@ std::optional<Quadro> ServicosQuadro::visualizarQuadro(const std::string& codigo
     nome.setTexto((*resultado)[0]["Nome"]);
     descricao.setTexto((*resultado)[0]["Descricao"]);
     limite.setLimite(std::stoi((*resultado)[0]["Limite"]));
-
 
     // Cria e retorna um objeto Quadro
     Quadro quadro(id, nome, descricao, limite);
@@ -195,25 +233,38 @@ ServicosCartao::ServicosCartao(const std::string& dbPath) : dbManager(dbPath) {
     }
 }
 
-void ServicosCartao::criarCartao(const Cartao& cartao, const std::string& codigoQuadro) {
+void ServicosCartao::criarCartao(const Cartao& cartao, const std::string& codigoQuadro, const std::string& emailUsuario) {
+    // Verificar se o quadro existe e pertence ao usuário
+    std::string sqlVerificaQuadro = "SELECT Codigo FROM Quadro WHERE Codigo = '" + codigoQuadro + "' AND EmailConta = '" + emailUsuario + "';";
+    auto resultadoVerificaQuadro = dbManager.executarConsulta(sqlVerificaQuadro);
+    if (!resultadoVerificaQuadro || resultadoVerificaQuadro->empty()) {
+        throw std::runtime_error("Quadro não encontrado ou não pertence ao usuário.");
+    }
+
+    // Verificar se o código do cartão já está em uso
+    std::string sqlVerificaCodigo = "SELECT Codigo FROM Cartao WHERE Codigo = '" + cartao.getCodigo() + "';";
+    auto resultadoVerificaCodigo = dbManager.executarConsulta(sqlVerificaCodigo);
+    if (resultadoVerificaCodigo && !resultadoVerificaCodigo->empty()) {
+        throw std::runtime_error("Código do cartão já está em uso.");
+    }
+
+    // Inserir cartão no banco de dados
     std::string sql = "INSERT INTO Cartao (Codigo, CodigoQuadro, Nome, Descricao, Coluna) VALUES ('" +
                       cartao.getCodigo() + "', '" + codigoQuadro + "', '" + cartao.getNome() + "', '" +
                       cartao.getDescricao() + "', '" + cartao.getColuna() + "');";
-
-    try {
-        dbManager.executarConsulta(sql);
-    } catch (const std::exception& e) {
-        throw std::runtime_error("Erro ao criar cartão: " + std::string(e.what()));
-    }
+    dbManager.executarConsulta(sql);
 }
 
 
-std::optional<Cartao> ServicosCartao::visualizarCartao(const std::string& codigo) {
-    std::string sql = "SELECT Nome, Descricao, Coluna FROM Cartao WHERE Codigo = '" + codigo + "';";
-    auto resultado = dbManager.executarConsulta(sql);
+std::optional<Cartao> ServicosCartao::visualizarCartao(const std::string& codigoCartao, const std::string& emailUsuario) {
+    // Verificar se o cartão existe e pertence a um quadro do usuário
+    std::string sqlVerificaCartao = "SELECT Cartao.Codigo, Cartao.Nome, Cartao.Descricao, Cartao.Coluna FROM Cartao "
+                                    "INNER JOIN Quadro ON Cartao.CodigoQuadro = Quadro.Codigo "
+                                    "WHERE Cartao.Codigo = '" + codigoCartao + "' AND Quadro.EmailConta = '" + emailUsuario + "';";
+    auto resultado = dbManager.executarConsulta(sqlVerificaCartao);
 
     if (!resultado || resultado->empty()) {
-        return std::nullopt; // Cartão não encontrado.
+        return std::nullopt; // Cartão não encontrado ou não pertence ao quadro do usuário.
     }
 
     Texto nome, descricao;
@@ -223,30 +274,42 @@ std::optional<Cartao> ServicosCartao::visualizarCartao(const std::string& codigo
     coluna.setEstado(resultado->at(0)["Coluna"]);
 
     Codigo codigoObj;
-    codigoObj.setCodigo(codigo);
+    codigoObj.setCodigo(codigoCartao);
 
     Cartao cartao(codigoObj, nome, descricao, coluna);
     return cartao;
 }
 
 
-void ServicosCartao::moverCartao(const std::string& codigo, const std::string& novaColuna) {
-    std::string sql = "UPDATE Cartao SET Coluna = '" + novaColuna + "' WHERE Codigo = '" + codigo + "';";
-    try {
-        dbManager.executarConsulta(sql);
-    } catch (const std::exception& e) {
-        throw std::runtime_error("Erro ao mover cartão: " + std::string(e.what()));
+void ServicosCartao::moverCartao(const std::string& codigoCartao, const std::string& novaColuna, const std::string& emailUsuario) {
+    // Verificar se o cartão existe e pertence a um quadro do usuário
+    std::string sqlVerificaCartao = "SELECT Cartao.Codigo FROM Cartao "
+                                    "INNER JOIN Quadro ON Cartao.CodigoQuadro = Quadro.Codigo "
+                                    "WHERE Cartao.Codigo = '" + codigoCartao + "' AND Quadro.EmailConta = '" + emailUsuario + "';";
+    auto resultadoVerificaCartao = dbManager.executarConsulta(sqlVerificaCartao);
+    if (!resultadoVerificaCartao || resultadoVerificaCartao->empty()) {
+        throw std::runtime_error("Cartão não encontrado ou não pertence ao quadro do usuário.");
     }
+
+    // Atualizar a coluna do cartão no banco de dados
+    std::string sqlAtualizacao = "UPDATE Cartao SET Coluna = '" + novaColuna + "' WHERE Codigo = '" + codigoCartao + "';";
+    dbManager.executarConsulta(sqlAtualizacao);
 }
 
 
-void ServicosCartao::excluirCartao(const std::string& codigo) {
-    std::string sql = "DELETE FROM Cartao WHERE Codigo = '" + codigo + "';";
-    try {
-        dbManager.executarConsulta(sql);
-    } catch (const std::exception& e) {
-        throw std::runtime_error("Erro ao excluir cartão: " + std::string(e.what()));
+void ServicosCartao::excluirCartao(const std::string& codigoCartao, const std::string& emailUsuario) {
+    // Verificar se o cartão existe e pertence a um quadro do usuário
+    std::string sqlVerificaCartao = "SELECT Cartao.Codigo FROM Cartao "
+                                    "INNER JOIN Quadro ON Cartao.CodigoQuadro = Quadro.Codigo "
+                                    "WHERE Cartao.Codigo = '" + codigoCartao + "' AND Quadro.EmailConta = '" + emailUsuario + "';";
+    auto resultadoVerificaCartao = dbManager.executarConsulta(sqlVerificaCartao);
+    if (!resultadoVerificaCartao || resultadoVerificaCartao->empty()) {
+        throw std::runtime_error("Cartão não encontrado ou não pertence ao quadro do usuário.");
     }
+
+    // Excluir o cartão do banco de dados
+    std::string sqlExclusao = "DELETE FROM Cartao WHERE Codigo = '" + codigoCartao + "';";
+    dbManager.executarConsulta(sqlExclusao);
 }
 
 
