@@ -3,6 +3,7 @@
 
 #include "servicos.hpp"
 #include <string>
+#include "DatabaseManager.hpp"
 
 
 class ControladorLogin : public IControleLogin {
@@ -29,10 +30,10 @@ public:
 class ControladorQuadros : public IControleQuadros {
 private:
     ServicosQuadro servicosQuadro;
+    DatabaseManager dbManager;
 
 public:
     ControladorQuadros(const std::string& dbPath);
-    std::vector<Quadro> obterQuadros(const std::string& emailUsuario) override;
     bool criarQuadro(const std::string& emailUsuario, 
                      const std::string& codigo, 
                      const std::string& nome, 
@@ -44,9 +45,37 @@ public:
                       const std::optional<std::string>& novaDescricao, 
                       const std::optional<int>& novoLimite) override;
     bool excluirQuadro(const std::string& emailUsuario, const std::string& codigoQuadro) override;
+    
+    std::optional<QuadroComCartoes> visualizarQuadro(const std::string& emailUsuario, const std::string& codigoQuadro) override;
+
+
+
 };
 
 
+class ControladorCartao : public IControleCartao {
+private:
+    ServicosCartao servicosCartao;
+    DatabaseManager dbManager;
+
+public:
+    ControladorCartao(const std::string& dbPath);
+    
+    bool criarCartao(const std::string& codigoQuadro, const std::string& codigoCartao, 
+                     const std::string& nome, const std::string& descricao, const std::string& coluna);
+    
+    bool editarCartao(const std::string& codigoQuadro, const std::string& codigoCartao, 
+                      const std::optional<std::string>& novoNome, 
+                      const std::optional<std::string>& novaDescricao, 
+                      const std::optional<std::string>& novaColuna) override;
+    
+    bool excluirCartao(const std::string& codigoQuadro, const std::string& codigoCartao) override;
+    
+    //std::optional<QuadroComCartoes> visualizarQuadro(const std::string& codigoQuadro, const std::string& codigoCartao) override;
+
+
+
+};
 
 
 

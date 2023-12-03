@@ -52,13 +52,36 @@ bool ControladorLogin::autenticar(const std::string& email, const std::string& s
 
 // Construtor
 ControladorQuadros::ControladorQuadros(const std::string& dbPath)
-    : servicosQuadro(dbPath) {}
+    : servicosQuadro(dbPath), dbManager(dbPath) {}
 
-std::vector<Quadro> ControladorQuadros::obterQuadros(const std::string& emailUsuario) {
-    // Aqui, você implementaria a lógica para obter os quadros do usuário.
-    // Por exemplo, chamando um método do serviço `servicosQuadro` que
-    // retorna os quadros associados ao email do usuário.
-    return std::vector<Quadro>();  // Exemplo de retorno vazio. Substitua pela lógica real.
+std::optional<QuadroComCartoes> ControladorQuadros::visualizarQuadro(const std::string& emailUsuario, const std::string& codigoQuadro) {
+    auto quadroOpt = servicosQuadro.visualizarQuadro(emailUsuario, codigoQuadro);
+
+    if (!quadroOpt) {
+        return std::nullopt; // Quadro não encontrado ou não pertence ao usuário.
+    }
+
+    // Recupera os códigos dos cartões associados ao quadro
+    std::vector<std::string> codigosCartoes;
+    std::string sqlCartoes = "SELECT Codigo FROM Cartao WHERE CodigoQuadro = '" + codigoQuadro + "';";
+    auto resultadoCartoes = dbManager.executarConsulta(sqlCartoes);
+
+    if (resultadoCartoes) {
+        for (const auto& linha : *resultadoCartoes) {
+            auto it = linha.find("Codigo");
+            if (it != linha.end()) {
+                codigosCartoes.push_back(it->second);
+            } else {
+                std::cerr << "Erro: Código do cartão não encontrado para o quadro '" << codigoQuadro << "'.\n";
+            }
+        }
+    }
+
+    QuadroComCartoes quadroComCartoes;
+    quadroComCartoes.quadro = *quadroOpt;
+    quadroComCartoes.codigosCartoes = codigosCartoes;
+
+    return quadroComCartoes;
 }
 
 bool ControladorQuadros::criarQuadro(const std::string& emailUsuario, 
@@ -132,3 +155,35 @@ bool ControladorQuadros::excluirQuadro(const std::string& emailUsuario, const st
         return false;
     }
 }
+
+
+
+ControladorCartao::ControladorCartao(const std::string& dbPath)
+    : servicosCartao(dbPath), dbManager(dbPath) {}
+
+bool ControladorCartao::criarCartao(const std::string& codigoQuadro, const std::string& codigoCartao, 
+                                     const std::string& nome, const std::string& descricao, const std::string& coluna) {
+    // Implementação da lógica para criar um cartão
+    // Utilize as classes de entidades e domínios para validações
+    return true;
+}
+
+bool ControladorCartao::editarCartao(const std::string& codigoQuadro, const std::string& codigoCartao, 
+                                      const std::optional<std::string>& novoNome, 
+                                      const std::optional<std::string>& novaDescricao, 
+                                      const std::optional<std::string>& novaColuna) {
+    // Implementação da lógica para editar um cartão
+    // Utilize as classes de entidades e domínios para validações
+    return true;
+}
+
+bool ControladorCartao::excluirCartao(const std::string& codigoQuadro, const std::string& codigoCartao) {
+    // Implementação da lógica para excluir um cartão
+     return true;
+}
+
+// std::optional<Cartao> ControladorCartoes::visualizarCartao(const std::string& codigoQuadro, const std::string& codigoCartao) {
+//     // Implementação da lógica para visualizar um cartão
+//     // Retorne os detalhes do cartão ou std::nullopt se o cartão não for encontrado
+// }
+

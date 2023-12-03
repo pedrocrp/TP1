@@ -1,6 +1,10 @@
 #include "apresentacao.hpp"
-#include <iostream>
 #include "controle.hpp"
+#include <iostream>
+#include <string>
+#include <optional>
+
+
 
 TelaCadastro::TelaCadastro() {
     // Inicializações, se necessário
@@ -60,10 +64,10 @@ void TelaInicial::exibir() {
                 break;
             }
             case 3:
-                std::cout << "Saindo...\n";
+                std::cout << "\nSaindo...\n";
                 break;
             default:
-                std::cout << "Opção inválida. Tente novamente.\n";
+                std::cout << "\nOpção inválida. Tente novamente.\n";
         }
     } while (escolha != 3);
 }
@@ -103,9 +107,12 @@ TelaGerenciamentoQuadros::TelaGerenciamentoQuadros(const std::string& dbPath, co
 
 void TelaGerenciamentoQuadros::exibir() {
     int opcao;
+    std::string codigoQuadro, nomeQuadro, descricaoQuadro;
+    int limiteQuadro;
+    Quadro quadro;
 
     do {
-        std::cout << "Gerenciamento de Quadros\n";
+        std::cout << "\nGerenciamento de Quadros\n";
         std::cout << "1. Criar Quadro\n";
         std::cout << "2. Editar Quadro\n";
         std::cout << "3. Excluir Quadro\n";
@@ -115,23 +122,92 @@ void TelaGerenciamentoQuadros::exibir() {
         std::cin >> opcao;
 
         switch (opcao) {
-            case 1:
+            case 1: {
                 // Lógica para criar um novo quadro
+                std::string codigo, nome, descricao, limiteInput;
+                int limite;
+                std::cout << "\nInsira o código do quadro: ";
+                std::cin >> codigo;
+                std::cout << "Insira o nome do quadro: ";
+                std::cin.ignore();
+                std::getline(std::cin, nome);
+                std::cout << "Insira a descrição do quadro: ";
+                std::getline(std::cin, descricao);
+                std::cout << "Insira o limite do quadro (5, 10, 15, 20): ";
+                std::cin >> limiteInput;
+                limite = std::stoi(limiteInput);  // Convertendo para inteiro
+
+                controladorQuadros.criarQuadro(emailUsuario, codigo, nome, descricao, limite);
                 break;
-            case 2:
+            }
+            
+            case 2: {
                 // Lógica para editar um quadro existente
+                std::cout << "\nDigite o código do quadro a ser editado: ";
+                std::cin >> codigoQuadro;
+                std::cin.ignore();
+
+                std::cout << "Digite o novo nome do quadro (deixe em branco se não quiser alterar): ";
+                std::getline(std::cin, nomeQuadro);
+
+                std::cout << "Digite a nova descrição do quadro (deixe em branco se não quiser alterar): ";
+                std::getline(std::cin, descricaoQuadro);
+
+                std::cout << "Digite o novo limite do quadro (deixe em branco se não quiser alterar): ";
+                std::string limiteInput;
+                std::getline(std::cin, limiteInput);
+                std::optional<int> novoLimite;
+                if (!limiteInput.empty()) {
+                    novoLimite = std::stoi(limiteInput);
+                }
+
+                controladorQuadros.editarQuadro(emailUsuario, codigoQuadro, nomeQuadro, descricaoQuadro, novoLimite);
                 break;
-            case 3:
+            }
+            
+            case 3: {
                 // Lógica para excluir um quadro
+                std::cout << "\nDigite o código do quadro a ser excluído: ";
+                std::cin >> codigoQuadro;
+                std::cin.ignore();
+                controladorQuadros.excluirQuadro(emailUsuario, codigoQuadro);
                 break;
-            case 4:
+            }
+            
+            case 4: {
                 // Lógica para visualizar um quadro
+                std::cout << "\nDigite o código do quadro a ser visualizado: ";
+                std::cin >> codigoQuadro;
+                auto quadroComCartoes = controladorQuadros.visualizarQuadro(emailUsuario, codigoQuadro);
+
+                if (quadroComCartoes) {
+                    const Quadro& quadro = quadroComCartoes->quadro;
+                    const std::vector<std::string>& codigosCartoes = quadroComCartoes->codigosCartoes;
+
+                    std::cout << "Nome do Quadro: " << quadro.getNome() << "\n";
+                    std::cout << "Descrição: " << quadro.getDescricao() << "\n";
+                    std::cout << "Limite: " << quadro.getLimite() << "\n";
+
+                    if (!codigosCartoes.empty()) {
+                        std::cout << "Códigos dos Cartões associados:\n";
+                        for (const auto& codigo : codigosCartoes) {
+                            std::cout << "- " << codigo << "\n";
+                        }
+                    } else {
+                        std::cout << "\nNão há cartões associados a este quadro.\n";
+                    }
+                } else {
+                    std::cout << "Quadro não encontrado.\n";
+                }
                 break;
-            case 5:
-                std::cout << "Voltando...\n";
+            }
+
+            case 5:{
+                std::cout << "\nVoltando...\n";
                 break;
+            }
             default:
-                std::cout << "Opção inválida. Tente novamente.\n";
+                std::cout << "\nOpção inválida. Tente novamente.\n";
         }
     } while (opcao != 5);
 }

@@ -22,7 +22,7 @@ public:
 
 class IControleQuadros {
 public:
-    virtual std::vector<Quadro> obterQuadros(const std::string& emailUsuario) = 0;
+    virtual std::optional<QuadroComCartoes> visualizarQuadro(const std::string& emailUsuario, const std::string& codigoQuadro) = 0;
     virtual bool criarQuadro(const std::string& emailUsuario, 
                      const std::string& codigo, 
                      const std::string& nome, 
@@ -38,6 +38,23 @@ public:
     
 };
 
+class IControleCartao {
+public:
+    virtual std::optional<Cartao> visualizarCartao(const std::string& codigoQuadro, const std::string& codigoCartao) = 0;
+    
+    virtual bool criarCartao(const std::string& codigoQuadro, const std::string& codigoCartao, 
+                     const std::string& nome, const std::string& descricao, const std::string& coluna) = 0;
+    
+    virtual bool editarCartao(const std::string& codigoQuadro, const std::string& codigoCartao, 
+                      const std::optional<std::string>& novoNome, 
+                      const std::optional<std::string>& novaDescricao, 
+                      const std::optional<std::string>& novaColuna) = 0;
+    
+    virtual bool excluirCartao(const std::string& codigoQuadro, const std::string& codigoCartao) = 0;
+    
+    virtual ~IControleCartao() {}
+    
+};
 
 
 // ---------------------------------------------------- CAMADA DE SERVICOS --------------------------------------------------- //

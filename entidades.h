@@ -14,7 +14,7 @@
 #define ENTIDADES_H
 
 #include "dominios.h"  // Inclui a definição das classes Email, Texto, Senha, etc.
-
+#include <vector>
 /**
  * @class Conta
  * @brief Classe que representa uma conta de usuário.
@@ -278,7 +278,10 @@ public:
     void setColuna(const Coluna& coluna);
 };
 
-
+struct QuadroComCartoes {
+    Quadro quadro;
+    std::vector<std::string> codigosCartoes;
+};
 
 
 #endif

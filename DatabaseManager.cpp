@@ -50,35 +50,41 @@ void DatabaseManager::criarTabelas() {
 
 
 std::optional<std::vector<std::map<std::string, std::string>>> DatabaseManager::executarConsulta(const std::string& sql) {
+    // Verifica se a consulta é um SELECT
     if (sql.find("SELECT") == 0) {
-        // Executa consultas SELECT
         sqlite3_stmt* stmt;
         std::vector<std::map<std::string, std::string>> results;
+        
         if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
-            std::cerr << "Erro ao preparar consulta: " << sqlite3_errmsg(db) << std::endl;
+            // std::cerr << "Erro ao preparar consulta: " << sqlite3_errmsg(db) << std::endl;
             return std::nullopt;
         }
+
         int cols = sqlite3_column_count(stmt);
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             std::map<std::string, std::string> row;
             for (int i = 0; i < cols; i++) {
                 std::string colName = sqlite3_column_name(stmt, i);
-                std::string colValue = reinterpret_cast<const char*>(sqlite3_column_text(stmt, i));
-                row[colName] = colValue;
+                const unsigned char* colText = sqlite3_column_text(stmt, i);
+                if (colText) {
+                    std::string colValue = reinterpret_cast<const char*>(colText);
+                    row[colName] = std::move(colValue);  // Use std::move para eficiência
+                }
             }
-            results.push_back(row);
+            results.push_back(std::move(row));  // Use std::move aqui também
         }
+
         sqlite3_finalize(stmt);
         return results;
     } else {
-        // Executa outros tipos de consultas (INSERT, UPDATE, DELETE)
+        // Executa outros tipos de consultas
         char* zErrMsg = nullptr;
         if (sqlite3_exec(db, sql.c_str(), 0, 0, &zErrMsg) != SQLITE_OK) {
             std::cerr << "Erro SQL: " << zErrMsg << std::endl;
             sqlite3_free(zErrMsg);
             return std::nullopt;
         }
-        return std::vector<std::map<std::string, std::string>>();  // Retorna um vetor vazio para indicar que não há dados a retornar.
+        return std::vector<std::map<std::string, std::string>>();
     }
 }
 
