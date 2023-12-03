@@ -24,6 +24,8 @@
 #include <iostream>
 #include <stdexcept>
 #include "entidades.h"
+#include "apresentacao.hpp"
+
 
 void testeConta(ServicosConta& servicosConta) {
     try {
@@ -50,15 +52,15 @@ void testeConta(ServicosConta& servicosConta) {
             std::cout << "Conta não encontrada." << std::endl;
         }
 
-        // Editar uma conta
-        std::string novoNome = "Usuario Atualizado";
-        std::string novaSenha = "NEw.1";
-        servicosConta.editarUsuario("usuario@example.com", novoNome, novaSenha);
-        std::cout << "Conta editada com sucesso." << std::endl;
+        // // Editar uma conta
+        // std::string novoNome = "Usuario Atualizado";
+        // std::string novaSenha = "NEw.1";
+        // servicosConta.editarUsuario("usuario@example.com", novoNome, novaSenha);
+        // std::cout << "Conta editada com sucesso." << std::endl;
 
-        // Excluir uma conta
-        servicosConta.excluirUsuario("usuario@example.com");
-        std::cout << "Conta excluída com sucesso." << std::endl;
+        // // Excluir uma conta
+        // servicosConta.excluirUsuario("usuario@example.com");
+        // std::cout << "Conta excluída com sucesso." << std::endl;
 
     } catch (const std::exception& e) {
         std::cerr << "Erro: " << e.what() << std::endl;
@@ -145,24 +147,25 @@ void testeCartao(ServicosCartao& servicosCartao, const std::string& emailUsuario
 }
 
 
+void testarFluxoCompleto() {
+    // Instância da tela inicial
+    TelaInicial telaInicial;
+
+    // Exibir tela inicial
+    // A lógica interna da TelaInicial cuidará de chamar as telas de Cadastro, Login e Quadros conforme necessário.
+    telaInicial.exibir();
+
+    // O controle retorna aqui após a conclusão do fluxo na tela inicial.
+}
+
 int main() {
     try {
-        std::string dbPath = "database.db";
-        std::string emailUsuario = "usuario@example.com";  // Supondo que seja o email do usuário logado
-
-        ServicosConta servicosConta(dbPath);
-        ServicosQuadro servicosQuadro(dbPath);
-        ServicosCartao servicosCartao(dbPath);
-
-        //testeConta(servicosConta);
-        testeQuadro(servicosQuadro, emailUsuario);
-        // testeCartao(servicosCartao, emailUsuario);
-
+        testarFluxoCompleto();
     } catch (const std::exception& e) {
-        std::cerr << "Erro geral: " << e.what() << std::endl;
-        return 1;
+        std::cerr << "Erro: " << e.what() << std::endl;
     }
 
     return 0;
 }
+
 
